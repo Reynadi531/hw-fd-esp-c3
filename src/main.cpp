@@ -1,11 +1,23 @@
 #include <Arduino.h>
 #include <sensor.h>
 #include <EEPROM.h>
+#include <WiFi.h>
+#include <time_helper.h>
+#include <logger.h>
+
+#define PIN_TRIGGER_LOGGING 0 
 
 Sensor sensor;
 bool continousData = false;
 bool continousDataGyro = false;
 bool continousDataAccel = false;
+int recordCount = 0;
+
+const char *WIFI_SSID = "ONE";
+const char *WIFI_PASSWORD = "kanan123";
+
+TimeHelper timeHelper;
+Logger logger;
 
 void getGyroData()
 {
@@ -32,9 +44,34 @@ void getAccelData()
 void setup()
 {
     Serial.begin(115200);
-    EEPROM.begin(9 * sizeof(float)); // 3 for gyro, 6 for accelerometer
+    EEPROM.begin(10 * sizeof(float)); // 3 for gyro, 6 for accelerometer, 1 for record count
     sensor.initAccelerometer();
     sensor.initGyroscope();
+
+    pinMode(PIN_TRIGGER_LOGGING, INPUT);
+
+    recordCount = EEPROM.read(10 * sizeof(float));
+    
+    if (digitalRead(PIN_TRIGGER_LOGGING) == LOW)
+    {
+        EEPROM.write(10 * sizeof(float), recordCount + 1); 
+        EEPROM.commit();
+        recordCount = EEPROM.read(10 * sizeof(float));
+    }
+
+    Serial.printf("Connecting to WiFi SSID: %s\n", WIFI_SSID);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWiFi connected!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
+
+    timeHelper.setGmtOffset(7 * 3600);
+    timeHelper.intializeTime();
 }
 
 void loop()
@@ -143,5 +180,25 @@ void loop()
     {
         getAccelData();
         delay(100);
+    }
+
+    if (digitalRead(PIN_TRIGGER_LOGGING) == LOW)
+    {
+        if (timeHelper.CheckIsTimeInitialized())
+        {
+            String currentDate = timeHelper.getCurrentDate();
+            logger.setDate((char*)currentDate.c_str());
+            logger.setNumberOfRuns(recordCount);
+            
+            xyzFloat accel = sensor.getCoorectedValuesAccel();
+            xyzFloat gyro = sensor.getCoorectedValuesGyro();
+            
+            logger.logGyroAccelData(gyro.x, gyro.y, gyro.z, accel.x, accel.y, accel.z);
+            Serial.println("Data logged successfully");
+        }
+        else
+        {
+            Serial.println("Time not initialized, cannot log data");
+        }
     }
 }
