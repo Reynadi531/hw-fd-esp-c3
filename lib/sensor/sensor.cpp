@@ -65,6 +65,8 @@ void Sensor::loadCalibrationAccel()
             this->correctionAccel[0], this->correctionAccel[1],
             this->correctionAccel[2], this->correctionAccel[3],
             this->correctionAccel[4], this->correctionAccel[5]);
+        
+        this->isAccelCalibrated = true;
     }
     else
     {
@@ -123,6 +125,7 @@ void Sensor::loadCalibrationGyro()
     EEPROM.get(0, this->correctionGyro[0]);
     EEPROM.get(sizeof(float), this->correctionGyro[1]);
     EEPROM.get(2 * sizeof(float), this->correctionGyro[2]);
+    this->isGyroCalibrated = true;
 }
 
 void Sensor::setOffsetGyroscope(float xOffset, float yOffset, float zOffset)
@@ -137,8 +140,13 @@ void Sensor::setOffsetGyroscope(float xOffset, float yOffset, float zOffset)
 
 xyzFloat Sensor::getCoorectedValuesAccel()
 {
+    if (this->isAccelCalibrated == false)
+    {
+        xyzFloat zeroed = {0.0f, 0.0f, 0.0f};
+        Serial.println("Accelerometer not calibrated, returning zeroed values.");
+        return zeroed;
+    }
     xyzFloat corrected;
-
     this->accelerometer->getCorrectedRawValues(&corrected);
 
     return corrected;
@@ -148,6 +156,13 @@ xyzFloat Sensor::getCoorectedValuesGyro()
 {
     xyzFloat corrected;
     int16_t x, y, z;
+
+    if (this->isGyroCalibrated == false)
+    {
+        Serial.println("Gyroscope not calibrated, returning zeroed values.");
+        corrected.x = corrected.y = corrected.z = 0.0f;
+        return corrected;
+    }
 
     this->gyroscope->getRotation(&x, &y, &z);
 

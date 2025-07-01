@@ -14,3 +14,10 @@
 
 ### Stack
 - PlatformIO
+
+### Config the wifi
+Please add the wifi_config.h under the src folder:
+```cpp
+const char* WIFI_SSID = "YOUR SSID HERE";
+const char* WIFI_PASSWORD = "YOUR SSID PASSWORD HERE";
+```

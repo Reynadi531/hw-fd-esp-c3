@@ -13,4 +13,5 @@ class TimeHelper
         int getGmtOffset();
         long getUnixTime();
         String getCurrentDate();
+        String getFullDateTime();
 };

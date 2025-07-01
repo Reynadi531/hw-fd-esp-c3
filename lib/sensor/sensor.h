@@ -9,6 +9,8 @@ private:
     ITG3200 *gyroscope;
     float correctionGyro[3];
     float correctionAccel[6];
+    bool isGyroCalibrated;
+    bool isAccelCalibrated;
 public:
     void initAccelerometer(u8_t address = 0x53);
     void initGyroscope(u8_t address = 0x68);

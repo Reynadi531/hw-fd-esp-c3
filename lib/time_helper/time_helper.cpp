@@ -15,7 +15,7 @@ void TimeHelper::intializeTime()
     while(!getLocalTime(&timeinfo, 1000))
     {
         Serial.println("Failed to obtain time");
-        return;
+        delay(1000);
     }
 
     Serial.println("Time initialized");
@@ -61,6 +61,26 @@ String TimeHelper::getCurrentDate()
     }
 
     char buffer[30];
-    strftime(buffer, sizeof(buffer), "%Y-%m-%d", &timeinfo);
+    strftime(buffer, sizeof(buffer), "%Y%m%d", &timeinfo);
+    return String(buffer);
+}
+
+String TimeHelper::getFullDateTime()
+{
+    if (!this->isTimeInitialized)
+    {
+        Serial.println("Time not initialized");
+        return "";
+    }
+
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo, 1000))
+    {
+        Serial.println("Failed to obtain time");
+        return "";
+    }
+
+    char buffer[30];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &timeinfo);
     return String(buffer);
 }

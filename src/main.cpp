@@ -3,18 +3,17 @@
 #include <EEPROM.h>
 #include <WiFi.h>
 #include <time_helper.h>
-#include <logger.h>
+#include <SD.h>
+#include <wifi_config.h>
+#include <logger_sdfat.h>
 
-#define PIN_TRIGGER_LOGGING 0 
+#define PIN_TRIGGER_LOGGING A0 
 
 Sensor sensor;
 bool continousData = false;
 bool continousDataGyro = false;
 bool continousDataAccel = false;
 int recordCount = 0;
-
-const char *WIFI_SSID = "ONE";
-const char *WIFI_PASSWORD = "kanan123";
 
 TimeHelper timeHelper;
 Logger logger;
@@ -48,7 +47,7 @@ void setup()
     sensor.initAccelerometer();
     sensor.initGyroscope();
 
-    pinMode(PIN_TRIGGER_LOGGING, INPUT);
+    pinMode(PIN_TRIGGER_LOGGING, INPUT_PULLUP);
 
     recordCount = EEPROM.read(10 * sizeof(float));
     
@@ -72,6 +71,8 @@ void setup()
 
     timeHelper.setGmtOffset(7 * 3600);
     timeHelper.intializeTime();
+
+    logger.initialize();
 }
 
 void loop()
@@ -193,8 +194,9 @@ void loop()
             xyzFloat accel = sensor.getCoorectedValuesAccel();
             xyzFloat gyro = sensor.getCoorectedValuesGyro();
             
-            logger.logGyroAccelData(gyro.x, gyro.y, gyro.z, accel.x, accel.y, accel.z);
+            logger.logGyroAccelData(gyro.x, gyro.y, gyro.z, accel.x, accel.y, accel.z, String(timeHelper.getUnixTime()));
             Serial.println("Data logged successfully");
+            delay(1000);
         }
         else
         {
