@@ -14,4 +14,5 @@ class TimeHelper
         long getUnixTime();
         String getCurrentDate();
         String getFullDateTime();
+        String getIsoDateTime();
 };

@@ -84,3 +84,23 @@ String TimeHelper::getFullDateTime()
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &timeinfo);
     return String(buffer);
 }
+
+String TimeHelper::getIsoDateTime()
+{
+    if (!this->isTimeInitialized)
+    {
+        Serial.println("Time not initialized");
+        return "";
+    }
+
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo, 1000))
+    {
+        Serial.println("Failed to obtain time");
+        return "";
+    }
+
+    char buffer[30];
+    strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S", &timeinfo);
+    return String(buffer);
+}
