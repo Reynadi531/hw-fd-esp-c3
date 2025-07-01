@@ -101,6 +101,10 @@ String TimeHelper::getIsoDateTime()
     }
 
     char buffer[30];
-    strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S", &timeinfo);
-    return String(buffer);
+    strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S%z", &timeinfo);
+    String result = String(buffer);
+    if (result.length() >= 5) {
+        result = result.substring(0, result.length() - 2) + ":" + result.substring(result.length() - 2);
+    }
+    return result;
 }
