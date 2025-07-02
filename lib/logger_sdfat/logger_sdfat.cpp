@@ -53,7 +53,7 @@ void Logger::logGyroAccelData(float gyroX, float gyroY, float gyroZ, float accel
 
     if (!this->sd.exists(fileName)) 
     {
-        this->file.open(fileName, FILE_WRITE);
+        this->file = this->sd.open(fileName, FILE_WRITE);
         if (!this->file) 
         {
             Serial.println("Error creating data file");
